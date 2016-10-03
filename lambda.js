@@ -4,6 +4,7 @@ var cf = require('aws-cloudfront-sign');
 var s3 = new AWS.S3();
 var moment = require('moment');
 var keyPairId = "abc";
+var cloudFrontDomain = "xyz.cloudfront.net/";
 
 function getS3(bucket, key){
   var params = {
@@ -32,7 +33,8 @@ function getJSON(url) {
 }
 
 exports.handler = (event, context, callback) => {
-    var tokenInfoUrl = 'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=' + event.Logins['accounts.google.com'];
+    var tokenInfoUrl = 'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=' +
+      event.Logins['accounts.google.com'];
     getJSON(tokenInfoUrl).then(function(data){
       if(!data.email.endsWith('@ocelotconsulting.com')){
         throw new Error('Access denied');
@@ -42,8 +44,9 @@ exports.handler = (event, context, callback) => {
       return getS3('ocelot-consulting-wp', `keys/pk-${keyPairId}.pem.txt`);
     })
     .then(function(pk){
-      var options = {keypairId: `${keyPairId}`, privateKeyString: pk.Body.toString(), expireTime: moment().add(1, 'day')}
-      callback(null, cf.getSignedCookies(`http*://${keyPairId}.cloudfront.net/*``, options));
+      var options = {keypairId: `${keyPairId}`, privateKeyString: pk.Body.toString(),
+      expireTime: moment().add(1, 'day')}
+      callback(null, cf.getSignedCookies(`http*://${cloudFrontDomain}/*`, options));
     })
     .catch(function(err){
       console.log('error', err);
