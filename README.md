@@ -1,2 +1,2 @@
 # s3nator
-Generating Cloudfront cookies using static HTML pages
+Generating Cloudfront cookies using static HTML pages.
